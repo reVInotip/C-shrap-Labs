@@ -34,7 +34,8 @@ public static class Loader<T> where T : class, IPhilosopher
 
                 // add some validation here
 
-                philosophers.Add((T)T.Create());
+                if (line is not null)
+                    philosophers.Add((T)T.Create(line));
             }
             while (line is not null);
         }
