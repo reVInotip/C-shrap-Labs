@@ -16,10 +16,7 @@ public class Philosopher: IPhilosopher
     private readonly int _takeForkTime;
     private readonly int _thinkingTime;
     private readonly int _putForkTimeout;
-    private int _thinkingCounter;
-    private int _eatingCounter;
-    private int _takeForkCounter;
-    private readonly int _putForkCounter;
+    private int _counter;
 
     public string Name { get; set; }
     public IFork? LeftFork { get; set; }
@@ -48,11 +45,7 @@ public class Philosopher: IPhilosopher
         _thinkingTime = thinkingTime;
         _putForkTimeout = putForkTimeout; // maybe it useless
 
-
-        _thinkingCounter = 0;
-        _eatingCounter = 0;
-        _takeForkCounter = 0;
-        _putForkCounter = 0;
+        _counter = 0;
     }
 
     public void Step()
@@ -90,14 +83,14 @@ public class Philosopher: IPhilosopher
 
     private void ProcessThinkingState()
     {
-        if (_thinkingCounter < _thinkingTime)
+        if (_counter < _thinkingTime)
         {
-            ++_thinkingCounter;
+            ++_counter;
             _action = Actions.None;
             return;
         }
 
-        _thinkingCounter = 0;
+        _counter = 0;
         _state = PhilosopherStates.Hungry;
         if (FirstTakeLeftFork)
             _action = Actions.TryTakeLeftFork;
@@ -107,9 +100,9 @@ public class Philosopher: IPhilosopher
 
     private void ProcessHungryState()
     {
-        if (_takeForkCounter < _takeForkTime)
+        if (_counter < _takeForkTime)
         {
-            ++_takeForkCounter;
+            ++_counter;
             if (FirstTakeLeftFork)
                 _action = Actions.TryTakeLeftFork;
             else
@@ -118,7 +111,7 @@ public class Philosopher: IPhilosopher
             return;
         }
 
-        _takeForkCounter = 0;
+        _counter = 0;
 
         if (FirstTakeLeftFork && LeftFork!.TryTake(this))
         {
@@ -134,14 +127,14 @@ public class Philosopher: IPhilosopher
 
     private void ProcessTakeLeftForkState()
     {
-        if (_takeForkCounter < _takeForkTime)
+        if (_counter < _takeForkTime)
         {
-            ++_takeForkCounter;
+            ++_counter;
             _action = Actions.TryTakeLeftFork;
             return;
         }
 
-        _takeForkCounter = 0;
+        _counter = 0;
 
         if (RightFork!.TryTake(this))
         {
@@ -152,13 +145,13 @@ public class Philosopher: IPhilosopher
 
     private void ProcessTakeRightForkState()
     {
-        if (_takeForkCounter < _takeForkTime)
+        if (_counter < _takeForkTime)
         {
-            ++_takeForkCounter;
+            ++_counter;
             _action = Actions.TryTakeRightFork;
         }
 
-        _takeForkCounter = 0;
+        _counter = 0;
 
         if (LeftFork!.TryTake(this))
         {
@@ -169,13 +162,13 @@ public class Philosopher: IPhilosopher
 
     private void ProcessEatingState()
     {
-        if (_eatingCounter < _eatingTime)
+        if (_counter < _eatingTime)
         {
-            ++_eatingCounter;
+            ++_counter;
             return;
         }
 
-        _eatingCounter = 0;
+        _counter = 0;
         ++_countEatingFood;
 
         if (FirstTakeLeftFork)
@@ -196,7 +189,7 @@ public class Philosopher: IPhilosopher
     public void PrintInfo()
     {
         var builder = new StringBuilder(Name);
-        _ = builder.AppendFormat(": {0} (Action = {1}), eating: {2}", _state, _action, _countEatingFood);
+        _ = builder.AppendFormat(": {0} (Action = {1}, {2} steps left), eating: {3}", _state, _action, _counter, _countEatingFood);
         Console.WriteLine(builder.ToString());
     }
 
