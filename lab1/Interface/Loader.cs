@@ -1,16 +1,16 @@
-namespace Interface.Strategy;
+using Interface.Strategy;
+
+namespace Interface;
 
 /// <summary>
 /// Load all philosophers from file
 /// </summary>
 /// <typeparam name="T">Defines a concrete implementation of the IPhilosopher interface</typeparam>
 /// <typeparam name="U">Defines a concrete implementation of the IFork interface</typeparam>
-public static class Loader<T, U>
-    where T : class, IPhilosopher
-    where U : class, IFork
+public static class Loader
 {
-    public static readonly List<T> philosophers = [];
-    public static readonly List<U> forks = [];
+    public static readonly List<IPhilosopher> philosophers = [];
+    public static readonly List<IFork> forks = [];
 
     /// <summary>
     ///     Load philosophers from file
@@ -19,7 +19,9 @@ public static class Loader<T, U>
     /// <param name="random">Some realization of random number generator</param>
     /// <param name="deadlockConfigure">Configure philosophers for deadlock</param>
     /// <throws>ArgumentException</throws>
-    public static void LoadPhilosophersFromFile(string filePath, Random random, bool deadlockConfigure = false)
+    public static void LoadPhilosophersFromFile<T, U>(string filePath, Random random, bool deadlockConfigure = false)
+        where T : class, IPhilosopherStrategy
+        where U : class, IForkStrategy
     {
         using var reader = new StreamReader(filePath);
         if (reader.Peek() < 0)
@@ -67,11 +69,11 @@ public static class Loader<T, U>
 
         for (int i = 0; i < forks.Count; ++i)
         {
-            philosophers[i].RightFork = forks[i];
-            philosophers[i].LeftFork = forks[(i + 1) % forks.Count];
-            philosophers[i].FirstTakeLeftFork = false;
+            ((T)philosophers[i]).RightFork = forks[i];
+            ((T)philosophers[i]).LeftFork = forks[(i + 1) % forks.Count];
+            ((T)philosophers[i]).FirstTakeLeftFork = false;
         }
 
-        if (!deadlockConfigure) philosophers[^1].FirstTakeLeftFork = true;
+        if (!deadlockConfigure) ((T)philosophers[^1]).FirstTakeLeftFork = true;
     }
 }

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Interface;
 
 namespace Src.Strategy;
 
-public class Fork: IFork
+public class Fork: IForkStrategy
 {
     private bool _isTaken;
     private readonly int _number;

@@ -1,6 +1,7 @@
 ﻿global using Interface.Strategy;
 
 using System;
+using Interface;
 using Src;
 using Src.Strategy;
 
@@ -15,12 +16,12 @@ try
     {
         case ProgramMode.StrategyMode:
             {
-                Loader<Philosopher, Fork>.LoadPhilosophersFromFile(pathToConf, new Random());
+                Loader.LoadPhilosophersFromFile<Philosopher, Fork>(pathToConf, new Random());
                 break;
             }
         case ProgramMode.StrategyDeadlockMode:
             {
-                Loader<Philosopher, Fork>.LoadPhilosophersFromFile(pathToConf, new Random(), true);
+                Loader.LoadPhilosophersFromFile<Philosopher, Fork>(pathToConf, new Random(), true);
                 break;
             }
         default: throw new ApplicationException("This mode not supported yet");
@@ -44,8 +45,8 @@ catch (Exception e)
 
 void MainLoop()
 {
-    var philosophers = Loader<Philosopher, Fork>.philosophers;
-    var forks = Loader<Philosopher, Fork>.forks;
+    var philosophers = Loader.philosophers;
+    var forks = Loader.forks;
 
     for (int i = 0; i < 1000000; ++i)
     {
@@ -69,7 +70,7 @@ void MainLoop()
             philosopher.Step();
         }
 
-        if (DeadlockAnalyzer<Philosopher, Fork>.IsDeadlock(philosophers, forks))
+        if (DeadlockAnalyzer.IsDeadlock(philosophers, forks))
         {
             Console.WriteLine("\nDEADLOCK DETECTED");
             return;

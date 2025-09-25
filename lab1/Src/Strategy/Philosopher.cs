@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Interface;
 using Interface.Strategy;
 
 namespace Src.Strategy;
 
-public class Philosopher: IPhilosopher
+public class Philosopher: IPhilosopherStrategy
 {
     private PhilosopherStates _state;
     private Actions _action;
@@ -23,7 +24,7 @@ public class Philosopher: IPhilosopher
     public IFork? RightFork { get; set; }
     public bool FirstTakeLeftFork { get; set; }
 
-    public static IPhilosopher Create(PhilosopherDTO philosopherDto)
+    public static Interface.IPhilosopher Create(PhilosopherDTO philosopherDto)
     {
         return new Philosopher
             (

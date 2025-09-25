@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Src.Strategy;
+namespace Interface;
 
-public class DeadlockAnalyzer<T, U> : IDeadlockAnalyzer<T, U>
-    where T : class, IPhilosopher
-    where U : class, IFork
+public abstract class DeadlockAnalyzer
 {
-    public static bool IsDeadlock(List<T> philosophers, List<U> forks)
+    public static bool IsDeadlock(List<IPhilosopher> philosophers, List<IFork> forks)
     {
         int countUsingForks = 0;
         foreach (var fork in forks)
