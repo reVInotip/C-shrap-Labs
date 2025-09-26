@@ -1,4 +1,4 @@
-namespace Src.Strategy;
+namespace Src;
 
 public enum PhilosopherStates
 {

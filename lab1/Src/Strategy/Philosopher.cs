@@ -18,13 +18,14 @@ public class Philosopher: IPhilosopherStrategy
     private readonly int _thinkingTime;
     private readonly int _putForkTimeout;
     private int _counter;
+    private int _stateTimeCounter;
 
     public string Name { get; set; }
-    public IFork? LeftFork { get; set; }
-    public IFork? RightFork { get; set; }
+    public IForkStrategy? LeftFork { get; set; }
+    public IForkStrategy? RightFork { get; set; }
     public bool FirstTakeLeftFork { get; set; }
 
-    public static Interface.IPhilosopher Create(PhilosopherDTO philosopherDto)
+    public static IPhilosopher Create(PhilosopherDTO philosopherDto)
     {
         return new Philosopher
             (
@@ -47,6 +48,7 @@ public class Philosopher: IPhilosopherStrategy
         _putForkTimeout = putForkTimeout; // maybe it useless
 
         _counter = 0;
+        _stateTimeCounter = 0;
     }
 
     public void Step()
@@ -84,6 +86,8 @@ public class Philosopher: IPhilosopherStrategy
 
     private void ProcessThinkingState()
     {
+        ++_stateTimeCounter;
+
         if (_counter < _thinkingTime)
         {
             ++_counter;
@@ -92,6 +96,7 @@ public class Philosopher: IPhilosopherStrategy
         }
 
         _counter = 0;
+        _stateTimeCounter = 0;
         _state = PhilosopherStates.Hungry;
         if (FirstTakeLeftFork)
             _action = Actions.TryTakeLeftFork;
@@ -101,6 +106,8 @@ public class Philosopher: IPhilosopherStrategy
 
     private void ProcessHungryState()
     {
+        ++_stateTimeCounter;
+
         if (_counter < _takeForkTime)
         {
             ++_counter;
@@ -116,11 +123,13 @@ public class Philosopher: IPhilosopherStrategy
 
         if (FirstTakeLeftFork && LeftFork!.TryTake(this))
         {
+            _stateTimeCounter = 0;
             _state = PhilosopherStates.TakeLeftFork;
             _action = Actions.TakeLeftFork;
         }
         else if (RightFork!.TryTake(this))
         {
+            _stateTimeCounter = 0;
             _state = PhilosopherStates.TakeRightFork;
             _action = Actions.TakeRightFork;
         }
@@ -128,6 +137,8 @@ public class Philosopher: IPhilosopherStrategy
 
     private void ProcessTakeLeftForkState()
     {
+        ++_stateTimeCounter;
+
         if (_counter < _takeForkTime)
         {
             ++_counter;
@@ -139,6 +150,7 @@ public class Philosopher: IPhilosopherStrategy
 
         if (RightFork!.TryTake(this))
         {
+            _stateTimeCounter = 0;
             _state = PhilosopherStates.Eating;
             _action = Actions.None;
         }
@@ -146,6 +158,8 @@ public class Philosopher: IPhilosopherStrategy
 
     private void ProcessTakeRightForkState()
     {
+        ++_stateTimeCounter;
+
         if (_counter < _takeForkTime)
         {
             ++_counter;
@@ -156,6 +170,7 @@ public class Philosopher: IPhilosopherStrategy
 
         if (LeftFork!.TryTake(this))
         {
+            _stateTimeCounter = 0;
             _state = PhilosopherStates.Eating;
             _action = Actions.None;
         }
@@ -163,6 +178,8 @@ public class Philosopher: IPhilosopherStrategy
 
     private void ProcessEatingState()
     {
+        ++_stateTimeCounter;
+
         if (_counter < _eatingTime)
         {
             ++_counter;
@@ -170,6 +187,7 @@ public class Philosopher: IPhilosopherStrategy
         }
 
         _counter = 0;
+        _stateTimeCounter = 0;
         ++_countEatingFood;
 
         if (FirstTakeLeftFork)
@@ -190,7 +208,7 @@ public class Philosopher: IPhilosopherStrategy
     public void PrintInfo()
     {
         var builder = new StringBuilder(Name);
-        _ = builder.AppendFormat(": {0} (Action = {1}, {2} steps left), eating: {3}", _state, _action, _counter, _countEatingFood);
+        _ = builder.AppendFormat(": {0} (Action = {1}, {2} steps left), eating: {3}", _state, _action, _stateTimeCounter, _countEatingFood);
         Console.WriteLine(builder.ToString());
     }
 

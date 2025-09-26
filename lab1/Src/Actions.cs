@@ -1,4 +1,4 @@
-namespace Src.Strategy;
+namespace Src;
 
 public enum Actions
 {
@@ -7,5 +7,6 @@ public enum Actions
     TakeLeftFork,
     TryTakeRightFork,
     TryTakeLeftFork,
+    TryTakeFork,
     None
 }

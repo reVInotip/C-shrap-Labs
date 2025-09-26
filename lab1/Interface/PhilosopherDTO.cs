@@ -1,4 +1,4 @@
-namespace Interface.Strategy;
+namespace Interface;
 
 sealed public class PhilosopherDTO
 {

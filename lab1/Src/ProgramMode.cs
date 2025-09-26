@@ -4,7 +4,8 @@ public enum ProgramMode
 {
     StrategyMode,
     StrategyDeadlockMode,
-    ControllerMode
+    ControllerMode,
+    ControllerDeadlockMode
 }
 
 public static class ProgramModeExtension
@@ -16,7 +17,8 @@ public static class ProgramModeExtension
             "strategy" => ProgramMode.StrategyMode,
             "strategy_deadlock" => ProgramMode.StrategyDeadlockMode,
             "controller" => ProgramMode.ControllerMode,
-            _ => throw new NotImplementedException("Invalid program mode"),
+            "controller_deadlock" => ProgramMode.ControllerDeadlockMode,
+            _ => throw new NotImplementedException("Invalid program mode " + stringMode),
         };
     }
 }

@@ -3,12 +3,11 @@
 using System;
 using Interface;
 using Src;
-using Src.Strategy;
 
 
 try
 {
-    ParseArgs(out ProgramMode progMode, out string pathToConf, out bool helpOnly);
+    ParseArgs(out ProgramMode progMode, out string pathToConf, out bool helpOnly, out int updateTime, out int countIterations);
 
     if (helpOnly) return;
 
@@ -16,18 +15,30 @@ try
     {
         case ProgramMode.StrategyMode:
             {
-                Loader.LoadPhilosophersFromFile<Philosopher, Fork>(pathToConf, new Random());
+                Loader.LoadPhilosophersFromFile<Src.Strategy.Philosopher, Src.Strategy.Fork>(pathToConf, new Random());
+                MainLoop(updateTime, countIterations);
                 break;
             }
         case ProgramMode.StrategyDeadlockMode:
             {
-                Loader.LoadPhilosophersFromFile<Philosopher, Fork>(pathToConf, new Random(), true);
+                Loader.LoadPhilosophersFromFile<Src.Strategy.Philosopher, Src.Strategy.Fork>(pathToConf, new Random(), true);
+                MainLoop(updateTime, countIterations);
                 break;
             }
-        default: throw new ApplicationException("This mode not supported yet");
+        case ProgramMode.ControllerMode:
+            {
+                Loader.LoadPhilosophersFromFile<Src.Controller.Philosopher, Src.Controller.Fork, Src.Controller.Waiter>(pathToConf, new Random());
+                MainLoop(updateTime, countIterations, true);
+                break;
+            }
+        case ProgramMode.ControllerDeadlockMode:
+            {
+                Loader.LoadPhilosophersFromFile<Src.Controller.Philosopher, Src.Controller.Fork, Src.Controller.Waiter>(pathToConf, new Random(), true);
+                MainLoop(updateTime, countIterations, true);
+                break;
+            }
+        default: throw new NotImplementedException("This mode not supported");
     }
-
-    MainLoop();
 }
 catch (ApplicationException e)
 {
@@ -43,13 +54,19 @@ catch (Exception e)
     Console.Write(e.StackTrace);
 }
 
-void MainLoop()
+void MainLoop(int updateTime, int countIterations, bool useWaiter = false)
 {
     var philosophers = Loader.philosophers;
     var forks = Loader.forks;
 
-    for (int i = 0; i < 1000000; ++i)
+    bool isDeadlock = false;
+    for (int i = 0; i < countIterations; ++i)
     {
+        if (DeadlockAnalyzer.IsDeadlock(philosophers, forks))
+        {
+            isDeadlock = true;
+        }
+
         Console.WriteLine("======== STEP {0} ========", i);
         Console.WriteLine("Philosophers:");
 
@@ -70,49 +87,88 @@ void MainLoop()
             philosopher.Step();
         }
 
-        if (DeadlockAnalyzer.IsDeadlock(philosophers, forks))
+        if (useWaiter) Loader.waiter!.Step();
+
+        if (isDeadlock)
         {
             Console.WriteLine("\nDEADLOCK DETECTED");
             return;
         }
 
-        Thread.Sleep(1000);
+        Thread.Sleep(updateTime);
         Console.Clear();
     }
 }
 
-void ParseArgs(out ProgramMode progMode, out string pathToConf, out bool helpOnly)
+void ParseArgs(out ProgramMode progMode, out string pathToConf, out bool helpOnly, out int updateTime, out int countIterations)
 {
-    ProgramMode? mode = null;
-    string? confPath = null;
+    progMode = ProgramMode.StrategyMode;
+    pathToConf = "./philosophers.conf";
+    updateTime = 1000;
+    countIterations = 1000000;
+    helpOnly = false;
+
+    bool wasMode = false;
+    bool wasConfigPath = false;
+    bool wasUpdateTime = false;
+    bool wasCountIterations = false;
 
     bool modeFlag = false;
-    bool pathFlag = false;
+    bool confPathFlag = false;
+    bool updTimeFlag = false;
+    bool countIterationsFlag = false;
 
-    helpOnly = false;
     foreach (var arg in args)
     {
         if (modeFlag)
         {
-            if (mode is not null)
+            if (wasMode)
                 throw new ArgumentException("Double set mode");
 
-            mode = ProgramModeExtension.ToMode(arg);
+            progMode = ProgramModeExtension.ToMode(arg);
+            wasMode = true;
             modeFlag = false;
         }
-        else if (pathFlag)
+        else if (confPathFlag)
         {
-            if (confPath is not null)
+            if (wasConfigPath)
                 throw new ArgumentException("Double set path");
 
-            confPath = arg;
-            pathFlag = false;
+            pathToConf = arg;
+            wasConfigPath = true;
+            confPathFlag = false;
+        }
+        else if (updTimeFlag)
+        {
+            if (wasUpdateTime)
+                throw new ArgumentException("Double set update time");
+
+            if (!int.TryParse(arg, out updateTime))
+                throw new ArgumentException("Update time should be int");
+
+            wasUpdateTime = true;
+            updTimeFlag = false;
+        }
+        else if (countIterationsFlag)
+        {
+            if (wasCountIterations)
+                throw new ArgumentException("Double set count iterations");
+
+            if (!int.TryParse(arg, out countIterations))
+                throw new ArgumentException("Count iterations should be int");
+
+            wasCountIterations= true;
+            countIterationsFlag = false;
         }
 
         if (arg == "-m" || arg == "--mode")
             modeFlag = true;
         else if (arg == "-c" || arg == "--config_path")
-            pathFlag = true;
+            confPathFlag = true;
+        else if (arg == "-t" || arg == "--update_time")
+            updTimeFlag = true;
+        else if (arg == "-i" || arg == "--count_iterations")
+            countIterationsFlag = true;
         else if (arg == "-h" || arg == "--help")
         {
             Console.Write
@@ -130,13 +186,12 @@ void ParseArgs(out ProgramMode progMode, out string pathToConf, out bool helpOnl
                     Default value: strategy.
                 -c or --config_path - relative or full path to config file. Current directory used by default.
                 -h or --help - see this page
+                -t or --update_time - time between steps of simulation (simulation steps period)
+                -i or --count_iterations - count steps of simulation
             """
             );
 
             helpOnly = true;
         }
     }
-
-    progMode = mode ?? ProgramMode.StrategyMode;
-    pathToConf = confPath ?? "./philosophers.conf";
 }
