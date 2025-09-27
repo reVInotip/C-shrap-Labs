@@ -1,6 +1,6 @@
 namespace Interface.Strategy;
 
-public interface IForkStrategy : IForkWithCreate
+public interface IForkStrategy : IFork
 {
     bool TryTake(IPhilosopher philosopher);
 }

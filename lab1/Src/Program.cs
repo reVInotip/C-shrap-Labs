@@ -4,10 +4,11 @@ using System;
 using Interface;
 using Src;
 
+int countIterations = 0;
 
 try
 {
-    ParseArgs(out ProgramMode progMode, out string pathToConf, out bool helpOnly, out int updateTime, out int countIterations);
+    ParseArgs(out ProgramMode progMode, out string pathToConf, out bool helpOnly, out int updateTime, out countIterations);
 
     if (helpOnly) return;
 
@@ -53,6 +54,46 @@ catch (Exception e)
     Console.WriteLine(e.Message);
     Console.Write(e.StackTrace);
 }
+finally
+{
+    var philosophers = Loader.philosophers;
+    var forks = Loader.forks;
+
+    int allEatingFood = 0;
+    double time = countIterations / 1000.0d;
+
+    int allHungryTime = 0;
+    int maxHungryTime = 0;
+    string mostHungryPhilosopher = "";
+
+    Console.WriteLine("======== SCORES ========");
+    Console.WriteLine("Philosophers:");
+
+    foreach (var philosopher in philosophers)
+    {
+        philosopher.PrintScore(time);
+        allEatingFood += philosopher.CountEatingFood;
+        allHungryTime += philosopher.HungryTime;
+
+        if (philosopher.HungryTime > maxHungryTime)
+        {
+            maxHungryTime = philosopher.HungryTime;
+            mostHungryPhilosopher = philosopher.Name;
+        }
+    }
+
+    Console.WriteLine("\nMiddle bandwidth: {0} (eat / (1000 * steps)", ((double) allEatingFood) / philosophers.Count / time);
+
+    Console.WriteLine("\nMiddle hungry time: {0} (steps), max hungry time: {1} on {2}",
+        ((double) allHungryTime) / philosophers.Count, maxHungryTime, mostHungryPhilosopher);
+
+    Console.WriteLine("\nForks:");
+
+    foreach (var fork in forks)
+    {
+        fork.PrintScore(countIterations);
+    }
+}
 
 void MainLoop(int updateTime, int countIterations, bool useWaiter = false)
 {
@@ -80,6 +121,7 @@ void MainLoop(int updateTime, int countIterations, bool useWaiter = false)
         foreach (var fork in forks)
         {
             fork.PrintInfo();
+            fork.Step();
         }
 
         foreach (var philosopher in philosophers)

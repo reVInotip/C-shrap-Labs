@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Interface.Controller;
 
-public interface IPhilosopherController : IPhilosopherWithCreate
+public interface IPhilosopherController : IPhilosopher
 {
     IWaiter? Waiter { get; protected internal set; }
     event EventHandler IAmHungryNotify;

@@ -13,7 +13,6 @@ public class Philosopher : IPhilosopherController
 {
     private PhilosopherStates _state;
     private Actions _action;
-    private int _countEatingFood;
     private readonly int _eatingTime;
     private readonly int _takeForkTime;
     private readonly int _thinkingTime;
@@ -24,6 +23,8 @@ public class Philosopher : IPhilosopherController
 
     public string Name { get; set; }
     public IWaiter? Waiter { get; set; }
+    public int HungryTime { get; private set; }
+    public int CountEatingFood { get; private set; }
     public event EventHandler IAmHungryNotify;
     public event EventHandler IAmFullNotify;
     public event EventHandler INeedLeftForkNotify;
@@ -54,6 +55,8 @@ public class Philosopher : IPhilosopherController
         _putForkTimeout = putForkTimeout; // maybe it useless
 
         _counter = 0;
+        HungryTime = 0;
+        CountEatingFood = 0;
         _leftForkTaken = false;
         _rightForkTaken = false;
     }
@@ -96,7 +99,15 @@ public class Philosopher : IPhilosopherController
     public void PrintInfo()
     {
         var builder = new StringBuilder(Name);
-        _ = builder.AppendFormat(": {0} (Action = {1}, {2} steps left), eating: {3}", _state, _action, _counter, _countEatingFood);
+        _ = builder.AppendFormat(": {0} (Action = {1}, {2} steps left), eating: {3}", _state, _action, _counter, CountEatingFood);
+        Console.WriteLine(builder.ToString());
+    }
+
+    public void PrintScore(double simulationTime)
+    {
+        var builder = new StringBuilder(Name);
+        _ = builder.AppendFormat(": bandwidth {0} (eat / (1000 * steps)) ", CountEatingFood / simulationTime);
+        _ = builder.AppendFormat(": hungry {0} (steps)", HungryTime);
         Console.WriteLine(builder.ToString());
     }
 
@@ -157,7 +168,7 @@ public class Philosopher : IPhilosopherController
         }
 
         _counter = 0;
-        ++_countEatingFood;
+        ++CountEatingFood;
 
         _state = PhilosopherStates.Thinking;
         _action = Actions.ReleaseForks;
@@ -224,5 +235,9 @@ public class Philosopher : IPhilosopherController
         }
     }
 
-    private void ProcessHungryState() => ++_counter;
+    private void ProcessHungryState()
+    {
+        ++HungryTime;
+        ++_counter;
+    }
 }

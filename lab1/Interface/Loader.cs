@@ -66,8 +66,8 @@ public static class Loader
     }
 
     private static void CreatePhilosophersAndForks<T, U>(string filePath, Random random)
-        where T : class, IPhilosopherWithCreate
-        where U : class, IForkWithCreate
+        where T : class, IPhilosopher
+        where U : class, IFork
     {
         using var reader = new StreamReader(filePath);
         if (reader.Peek() < 0)

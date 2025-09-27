@@ -15,6 +15,9 @@ public class Fork: IForkController
     private readonly int _number;
     public IPhilosopher? Owner { get; set; }
     public IPhilosopher? Locker { get; set; }
+    public int UsedTime { get; private set; }
+    public int BlockTime { get; private set; }
+    public int AvailableTime { get; private set; }
 
     public static IFork Create(int number)
     {
@@ -100,5 +103,20 @@ public class Fork: IForkController
     public bool IsLockedBy(IPhilosopher philosopher)
     {
         return _isLocked && Locker == philosopher;
+    }
+
+    public void Step()
+    {
+        if (_isTaken) ++UsedTime;
+        else if (_isLocked) ++BlockTime;
+        else ++AvailableTime;
+    }
+
+    public void PrintScore(double simulationTime)
+    {
+        var builder = new StringBuilder();
+        builder.AppendFormat("Fork-{0}: used {1}%, block {2}%, available {3}%",
+            _number, UsedTime / simulationTime, BlockTime / simulationTime, AvailableTime / simulationTime);
+        Console.WriteLine(builder.ToString());
     }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Interface.Controller;
 
-public interface IForkController : IForkWithCreate
+public interface IForkController : IFork
 {
     void Take(IPhilosopher philosopher);
     void Lock(IPhilosopher philosopher);

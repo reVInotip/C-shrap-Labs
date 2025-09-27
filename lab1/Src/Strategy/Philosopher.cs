@@ -12,7 +12,6 @@ public class Philosopher: IPhilosopherStrategy
 {
     private PhilosopherStates _state;
     private Actions _action;
-    private int _countEatingFood;
     private readonly int _eatingTime;
     private readonly int _takeForkTime;
     private readonly int _thinkingTime;
@@ -21,6 +20,8 @@ public class Philosopher: IPhilosopherStrategy
     private int _stateTimeCounter;
 
     public string Name { get; set; }
+    public int CountEatingFood { get; private set; }
+    public int HungryTime { get; private set; }
     public IForkStrategy? LeftFork { get; set; }
     public IForkStrategy? RightFork { get; set; }
     public bool FirstTakeLeftFork { get; set; }
@@ -49,6 +50,8 @@ public class Philosopher: IPhilosopherStrategy
 
         _counter = 0;
         _stateTimeCounter = 0;
+        HungryTime = 0;
+        CountEatingFood = 0;
     }
 
     public void Step()
@@ -106,6 +109,7 @@ public class Philosopher: IPhilosopherStrategy
 
     private void ProcessHungryState()
     {
+        ++HungryTime;
         ++_stateTimeCounter;
 
         if (_counter < _takeForkTime)
@@ -188,7 +192,7 @@ public class Philosopher: IPhilosopherStrategy
 
         _counter = 0;
         _stateTimeCounter = 0;
-        ++_countEatingFood;
+        ++CountEatingFood;
 
         if (FirstTakeLeftFork)
         {
@@ -208,7 +212,15 @@ public class Philosopher: IPhilosopherStrategy
     public void PrintInfo()
     {
         var builder = new StringBuilder(Name);
-        _ = builder.AppendFormat(": {0} (Action = {1}, {2} steps left), eating: {3}", _state, _action, _stateTimeCounter, _countEatingFood);
+        _ = builder.AppendFormat(": {0} (Action = {1}, {2} steps left), eating: {3}", _state, _action, _stateTimeCounter, CountEatingFood);
+        Console.WriteLine(builder.ToString());
+    }
+
+    public void PrintScore(double simulationTime)
+    {
+        var builder = new StringBuilder(Name);
+        _ = builder.AppendFormat(": bandwidth {0}", CountEatingFood / simulationTime);
+        _ = builder.AppendFormat(": hungry {0} (steps)", HungryTime);
         Console.WriteLine(builder.ToString());
     }
 
