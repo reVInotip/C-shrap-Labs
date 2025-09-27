@@ -220,11 +220,11 @@ void ParseArgs(out ProgramMode progMode, out string pathToConf, out bool helpOnl
 
                 *DESCRIPTION*
                 In this lab, I solved the Dining Philosophers problem in a single thread. Several solution modes
-                are presented: no controller, no controller with deadlock, and with controller. The default mode
-                is no controller.
+                are presented: without controller, without controller with deadlock, with controller and without controller with deadlock. 
+                The default mode is without controller.
 
                 *ARGUMENTS*
-                -m or --mode - set execution mode. Correct values: strategy, strategy_deadlock, controller.
+                -m or --mode - set execution mode. Correct values: strategy, strategy_deadlock, controller, controller_deadlock.
                     Default value: strategy.
                 -c or --config_path - relative or full path to config file. Current directory used by default.
                 -h or --help - see this page
