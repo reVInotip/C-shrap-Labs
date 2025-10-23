@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Interface.Controller;
 using Interface.Strategy;
 
 namespace Interface;
@@ -11,7 +10,6 @@ public static class Loader
 {
     public static readonly List<IPhilosopher> philosophers = [];
     public static readonly List<IFork> forks = [];
-    public static IWaiter? waiter = null;
 
     /// <summary>
     ///     Load philosophers from file
@@ -26,7 +24,7 @@ public static class Loader
         where T : class, IPhilosopherStrategy
         where U : class, IForkStrategy
     {
-        CreatePhilosophersAndForks<T, U>(filePath, random);
+        CreatePhilosophersAndForks<T, U>(filePath, random, deadlockConfigure);
         for (int i = 0; i < forks.Count; ++i)
         {
             ((T)philosophers[i]).RightFork = (IForkStrategy)forks[i];
@@ -37,35 +35,7 @@ public static class Loader
         if (!deadlockConfigure) ((T)philosophers[^1]).FirstTakeLeftFork = true;
     }
 
-    /// <summary>
-    ///     Load philosophers from file
-    /// </summary>
-    /// <param name="filePath">Path to file with philosophers</param>
-    /// <param name="random">Some realization of random number generator</param>
-    /// <param name="deadlockConfigure">Configure philosophers for deadlock</param>
-    /// <typeparam name="T">Defines a concrete implementation of the IPhilosopher interface</typeparam>
-    /// <typeparam name="U">Defines a concrete implementation of the IFork interface</typeparam>
-    /// <throws>ArgumentException</throws>
-    public static void LoadPhilosophersFromFile<T, U, C>(string filePath, Random random, bool deadlockConfigure = false)
-        where T : class, IPhilosopherController
-        where U : class, IForkController
-        where C : class, IWaiter
-    {
-        CreatePhilosophersAndForks<T, U>(filePath, random);
-
-        List<IPhilosopherController> philosophersMain = [];
-        List<IForkController> forksMain = [];
-
-        for (int i = 0; i < philosophers.Count; ++i)
-        {
-            philosophersMain.Add((T)philosophers[i]);
-            forksMain.Add((U)forks[i]);
-        }
-        
-        waiter = C.Create(philosophersMain, forksMain, deadlockConfigure);
-    }
-
-    private static void CreatePhilosophersAndForks<T, U>(string filePath, Random random)
+    private static void CreatePhilosophersAndForks<T, U>(string filePath, Random random, bool deadlockConfigure)
         where T : class, IPhilosopher
         where U : class, IFork
     {
@@ -76,11 +46,22 @@ public static class Loader
         string? line = null;
 
         // move this ranges to config file
-        var thinkingRange = new int[] { 3, 10 };
-        var eatingRange = new int[] { 4, 5 };
+        int[] thinkingRange;
+        int[] eatingRange;
 
-        int takeForkTime = 2;
-        int putForkTimeout = 3;
+        if (!deadlockConfigure)
+        {
+            thinkingRange = new int[] { 30, 100 }; //ms
+            eatingRange = new int[] { 40, 50 }; //ms
+        }
+        else
+        {
+            thinkingRange = new int[] { 50, 55 }; //ms
+            eatingRange = new int[] { 45, 50 }; //ms
+        }
+
+        int takeForkTime = 20; //ms
+        int putForkTimeout = 30; //ms
         int eatingTime;
         int thinkingTime;
 

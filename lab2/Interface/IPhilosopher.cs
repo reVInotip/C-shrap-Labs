@@ -14,8 +14,9 @@ public interface IPhilosopher
         throw new NotImplementedException("Create function not implemented here");
     }
     string Name { get; protected internal set; }
-    void Step();
     void PrintInfo();
+    void Start(CancellationToken cancellationToken);
+    void Stop();
     void PrintScore(double simulationTime);
     bool IsEating();
 }

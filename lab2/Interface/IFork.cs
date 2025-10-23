@@ -7,16 +7,15 @@ namespace Interface;
 
 public interface IFork
 {
-    int UsedTime { get; }
-    int BlockTime { get; }
-    int AvailableTime { get; }
+    long UsedTime { get; }
+    long BlockTime { get; }
+    long AvailableTime { get; }
     virtual static IFork Create(int number)
     {
         throw new NotImplementedException("Create function not implemented here");
     }
-    IPhilosopher? Owner { get; protected internal set; }
+    IPhilosopher? Owner { get; }
     void Put();
     void PrintInfo();
     void PrintScore(double simulationTime);
-    void Step();
 }
