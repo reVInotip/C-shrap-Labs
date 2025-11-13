@@ -3,10 +3,12 @@ using Interface.Channel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Src.Channels.Events;
-using Src.Channels.Items;
+using Philosophers.Core.Utils;
+using Philosophers.Services.Channels.Items;
+using Philosophers.Services.Utils;
+using Philosophers.Services.Channels.Events;
 
-namespace Src.Strategy;
+namespace Philosophers.Core.HostedServices.Philosophers;
 
 public abstract class PhilosopherService : BackgroundService, IPhilosopher
 {

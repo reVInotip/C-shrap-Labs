@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using Interface;
 
-namespace Src.Strategy;
+namespace Philosophers.Services.Utils;
 
 public class Fork : IFork
 {

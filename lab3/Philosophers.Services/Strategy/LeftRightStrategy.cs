@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Interface;
-using Src.Philosophers;
+using Interface.Strategy;
 
-namespace Src.Strategy;
+namespace Philosophers.Services.Strategy;
 
 public class LeftRightStrategy : ILeftRightStrategy
 {
-    private static Type _leftHandedPhilosopher = typeof(Marks);
+    private static IPhilosopher? _leftHandedPhilosopher;
 
     public void TakeFork(IPhilosopher philosopher)
     {
-        if (philosopher.GetType() == _leftHandedPhilosopher)
+        _leftHandedPhilosopher ??= philosopher; // probable this comparison is redundant
+        
+        if (philosopher == _leftHandedPhilosopher)
         {
             philosopher.LeftFork.TryTake(philosopher);
         }
@@ -35,7 +37,9 @@ public class LeftRightStrategy : ILeftRightStrategy
 
     public void LockFork(IPhilosopher philosopher)
     {
-        if (philosopher.GetType() == _leftHandedPhilosopher)
+        _leftHandedPhilosopher ??= philosopher;
+
+        if (philosopher == _leftHandedPhilosopher)
         {
             philosopher.LeftFork.TryLock(philosopher);
         }

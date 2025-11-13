@@ -1,4 +1,5 @@
 ﻿global using Interface.Strategy;
+global using Philosophers.Services;
 
 using System;
 using System.Diagnostics;
@@ -9,11 +10,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Src;
-using Src.Channels;
-using Src.Channels.Items;
-using Src.Philosophers;
-using Src.Strategy;
+using Philosophers.Core.HostedServices.Philosophers;
+using Philosophers.Core.HostedServices;
+using Philosophers.Services.Channels.Items;
+using Philosophers.Services.Channels;
+using Philosophers.Services.Strategy;
+using Philosophers.Services.Utils;
 
 bool helpOnly = false;
 

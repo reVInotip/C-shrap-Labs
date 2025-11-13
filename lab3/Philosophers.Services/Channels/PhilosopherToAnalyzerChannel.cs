@@ -4,24 +4,24 @@ using System.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Interface.Channel;
-using Src.Channels.Items;
+using Philosophers.Services.Channels.Items;
 
-namespace Src.Channels;
+namespace Philosophers.Services.Channels;
 
-public class PhilosopherToPrinterChannel: IChannel<PhilosopherToPrinterChannelItem>
+public class PhilosopherToAnalyzerChannel: IChannel<PhilosopherToAnalyzerChannelItem>
 {
-    private readonly Channel<PhilosopherToPrinterChannelItem> _channel;
+    private readonly Channel<PhilosopherToAnalyzerChannelItem> _channel;
 
-    public ChannelWriter<PhilosopherToPrinterChannelItem> Writer => _channel.Writer;
-    public ChannelReader<PhilosopherToPrinterChannelItem> Reader => _channel.Reader;
+    public ChannelWriter<PhilosopherToAnalyzerChannelItem> Writer => _channel.Writer;
+    public ChannelReader<PhilosopherToAnalyzerChannelItem> Reader => _channel.Reader;
 
     public event EventHandler? SendMeItem;
     public event EventHandler<IChannelEventArgs>? SendMeItemBy;
     public event EventHandler? PublisherWantToRegister;
 
-    public PhilosopherToPrinterChannel()
+    public PhilosopherToAnalyzerChannel()
     {
-        _channel = Channel.CreateBounded<PhilosopherToPrinterChannelItem>(
+        _channel = Channel.CreateBounded<PhilosopherToAnalyzerChannelItem>(
             new BoundedChannelOptions(500)
             {
                 FullMode = BoundedChannelFullMode.Wait

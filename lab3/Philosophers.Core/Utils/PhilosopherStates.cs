@@ -1,4 +1,4 @@
-namespace Src;
+namespace Philosophers.Core.Utils;
 
 public enum PhilosopherStates
 {

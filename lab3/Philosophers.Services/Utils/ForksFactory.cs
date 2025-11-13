@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Interface;
 
-namespace Interface;
+namespace Philosophers.Services.Utils;
 
 public class ForksFactory<T> : IForksFactory<T>
     where T: class, IFork

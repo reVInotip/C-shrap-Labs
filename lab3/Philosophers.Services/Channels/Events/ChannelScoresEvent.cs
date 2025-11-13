@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Interface.Channel;
 
-namespace Src.Channels.Events;
+namespace Philosophers.Services.Channels.Events;
 
 public class ChannelScoresEvent: IChannelEventArgs
 {

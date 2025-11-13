@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Src;
+namespace Philosophers.Services;
 
 public class CompletionCoordinator
 {

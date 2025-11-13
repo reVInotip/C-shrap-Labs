@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Interface.Channel;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Src.Channels.Items;
+using Philosophers.Services.Channels.Items;
 
-namespace Interface;
+namespace Philosophers.Core.HostedServices;
 
 public class DeadlockAnalyzer : BackgroundService
 {
@@ -78,7 +78,8 @@ public class DeadlockAnalyzer : BackgroundService
         {
             await Analyze(stoppingToken);
         }
-        catch (OperationCanceledException) {
+        catch (OperationCanceledException)
+        {
             throw new ApplicationException("Operation cancelled not normally");
         }
 

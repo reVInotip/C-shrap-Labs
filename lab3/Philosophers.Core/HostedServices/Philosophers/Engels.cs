@@ -6,14 +6,14 @@ using Interface;
 using Interface.Channel;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Src.Channels.Items;
-using Src.Strategy;
+using Philosophers.Services.Utils;
+using Philosophers.Services.Channels.Items;
 
-namespace Src.Philosophers;
+namespace Philosophers.Core.HostedServices.Philosophers;
 
-public class Platon : PhilosopherService
+public class Engels : PhilosopherService
 {
-    public Platon(
+    public Engels(
         ILogger<PhilosopherService> logger,
         IStrategy philosopherStrategy,
         IOptions<PhilosopherConfiguration> options,
@@ -22,6 +22,6 @@ public class Platon : PhilosopherService
         IChannel<PhilosopherToPrinterChannelItem> channelToPrinter)
     : base(logger, philosopherStrategy, options, forksFactory, channelToAnalyzer, channelToPrinter)
     {
-        Name = "Платон";
+        Name = "Энгельс";
     }
 }

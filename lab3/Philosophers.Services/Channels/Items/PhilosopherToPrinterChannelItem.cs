@@ -4,6 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Interface.Channel;
 
-namespace Src.Channels.Items;
+namespace Philosophers.Services.Channels.Items;
 
 public record PhilosopherToPrinterChannelItem(string PhilosopherInfo, string LeftForkInfo, string RightForkInfo): IChannelItem;
