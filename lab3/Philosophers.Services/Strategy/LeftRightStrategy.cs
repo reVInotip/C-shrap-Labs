@@ -9,11 +9,11 @@ namespace Philosophers.Services.Strategy;
 
 public class LeftRightStrategy : ILeftRightStrategy
 {
-    private static IPhilosopher? _leftHandedPhilosopher;
+    private IPhilosopher? _leftHandedPhilosopher;
 
     public void TakeFork(IPhilosopher philosopher)
     {
-        _leftHandedPhilosopher ??= philosopher; // probable this comparison is redundant
+        _leftHandedPhilosopher ??= philosopher; // probable this comparison is redundant 
         
         if (philosopher == _leftHandedPhilosopher)
         {
