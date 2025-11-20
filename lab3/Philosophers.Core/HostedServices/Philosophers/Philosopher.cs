@@ -7,8 +7,12 @@ using Philosophers.Core.Utils;
 using Philosophers.Services.Channels.Items;
 using Philosophers.Services.Utils;
 using Philosophers.Services.Channels.Events;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Philosophers.Tests")]
 
 namespace Philosophers.Core.HostedServices.Philosophers;
+
 
 public abstract class PhilosopherService : BackgroundService, IPhilosopher
 {

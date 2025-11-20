@@ -4,18 +4,6 @@ using Philosophers.Services.Strategy;
 
 namespace Philosophers.Services.Tests;
 
-public class LeftRightStrategyFixture
-{
-    public LeftRightStrategy LeftRightStrategyFirst { get; }
-    public LeftRightStrategy LeftRightStrategySecond { get; }
-
-    public LeftRightStrategyFixture()
-    {
-        LeftRightStrategyFirst = new LeftRightStrategy();
-        LeftRightStrategySecond = new LeftRightStrategy();
-    }
-}
-
 public class LeftRightStrategyTests()
 {
     ///

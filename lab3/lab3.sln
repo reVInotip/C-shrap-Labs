@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Philosophers.Services", "Ph
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Philosophers.Services.Tests", "Philosophers.Services.Tests\Philosophers.Services.Tests.csproj", "{7BF8B2E5-1D7E-4836-A83C-A0E640E07BED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Philosophers.Core.Tests", "Philosophers.Core.Tests\Philosophers.Core.Tests.csproj", "{61D52492-795A-4593-A2E1-840ECF333D91}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{7BF8B2E5-1D7E-4836-A83C-A0E640E07BED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BF8B2E5-1D7E-4836-A83C-A0E640E07BED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BF8B2E5-1D7E-4836-A83C-A0E640E07BED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61D52492-795A-4593-A2E1-840ECF333D91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61D52492-795A-4593-A2E1-840ECF333D91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61D52492-795A-4593-A2E1-840ECF333D91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61D52492-795A-4593-A2E1-840ECF333D91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
