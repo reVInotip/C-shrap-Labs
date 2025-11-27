@@ -2,7 +2,10 @@ using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Interface;
 using Interface.Channel;
+using Interface.DTO;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Philosophers.Core.HostedServices;
@@ -29,12 +32,30 @@ public class DeadlockAnalyzerTests
         channelMock.Setup(c => c.Reader).Returns(reader);
         channelMock.Setup(c => c.Writer).Returns(writer);
 
+        var dbContextMock = new Mock<ISimulationDatabaseProcessor>();
+        dbContextMock
+            .Setup(d =>
+                d.SaveRunningInfoAsync(It.IsAny<RunningInfoDto>(), It.IsAny<CancellationToken>())
+            )
+            .Returns(Task.CompletedTask);
+
+        var serviceMock = new Mock<IServiceProvider>();
+        serviceMock
+            .Setup(s => s.GetService(typeof(ISimulationDatabaseProcessor)))
+            .Returns(dbContextMock.Object);
+
+        var scopeMock = new Mock<IServiceScope>();
+        scopeMock.Setup(s => s.ServiceProvider).Returns(serviceMock.Object);
+
+        var scopeFactoryMock = new Mock<IServiceScopeFactory>();
+        scopeFactoryMock.Setup(s => s.CreateScope()).Returns(scopeMock.Object);
+
         // Notify вызывает у подписчиков SendMeItem,
         // но мы не хотим настоящей логики философа — просто заглушка
         channelMock.Setup(c => c.Notify(It.IsAny<object>()))
             .Callback<object>(o => { /* no-op */ });
 
-        return new DeadlockAnalyzer(channelMock.Object, logger.Object);
+        return new DeadlockAnalyzer(channelMock.Object, scopeFactoryMock.Object, logger.Object);
     }
 
     private void CallPublisherRegistered(DeadlockAnalyzer analyzer, Mock<IChannel<PhilosopherToAnalyzerChannelItem>> channelMock)
@@ -86,6 +107,10 @@ public class DeadlockAnalyzerTests
             {
                 return ex.Message == "Deadlock"; // если дедлок — плохой результат
             }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
             return false; // Analyze() вернулся — значит дедлока нет
         });
 
@@ -126,12 +151,7 @@ public class DeadlockAnalyzerTests
                 RightForkIsFree: false));
         }
 
-        // Accept
-        // Ожидаем, что Analyze бросит ApplicationException("Deadlock")
-        await Assert.ThrowsAsync<ApplicationException>(async () =>
-        {
-            await analyzer.Analyze(cts.Token);
-        });
+        Assert.NotNull(await analyzer.Analyze(cts.Token));
     }
 
     // ===================================================================
@@ -175,6 +195,10 @@ public class DeadlockAnalyzerTests
             {
                 return ex.Message == "Deadlock"; // не должно произойти
             }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
             return false; // нормальный выход
         });
 
@@ -215,7 +239,11 @@ public class DeadlockAnalyzerTests
             RightForkIsFree: false));
 
         // Analyze вернёт после первого цикла (нет дедлока)
-        await analyzer.Analyze(token);
+        try
+        {
+            await analyzer.Analyze(token);
+        }
+        catch (OperationCanceledException) {}
 
         // --- Вторая итерация — дедлок ---
         // Оба не едят + все вилки заняты
@@ -228,12 +256,11 @@ public class DeadlockAnalyzerTests
             IAmEating: false,
             LeftForkIsFree: false,
             RightForkIsFree: false));
+        
+        token = new CancellationTokenSource(2000).Token;
 
         // Accept
-        await Assert.ThrowsAsync<ApplicationException>(async () =>
-        {
-            await analyzer.Analyze(token);
-        });
+        Assert.NotNull(await analyzer.Analyze(token));
     }
 }
 

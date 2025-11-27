@@ -16,6 +16,9 @@ using Philosophers.Services.Channels.Items;
 using Philosophers.Services.Channels;
 using Philosophers.Services.Strategy;
 using Philosophers.Services.Utils;
+using Philosophers.Services.DB.Service;
+using Philosophers.DB;
+using Microsoft.EntityFrameworkCore;
 
 bool helpOnly = false;
 
@@ -30,8 +33,11 @@ try
         {
             configuration.AddJsonFile(pathToConf, optional: false, reloadOnChange: false);
         })
-        .ConfigureServices((hostContext, services) =>
+    .ConfigureServices((hostContext, services) =>
         {
+            var s = hostContext.Configuration.GetValue<string>("ConnectionStrings:PostgresConnection");
+            services.AddDbContext<RunsContext>(options => options.UseNpgsql(s));
+
             services.AddSingleton<IChannel<PhilosopherToAnalyzerChannelItem>, PhilosopherToAnalyzerChannel>();
             services.AddSingleton<IChannel<PhilosopherToPrinterChannelItem>, PhilosopherToPrinterChannel>();
             services.AddSingleton<IStrategy, LeftRightStrategy>();
@@ -39,6 +45,8 @@ try
             services.AddSingleton<ILogger<DeadlockAnalyzer>, Logger<DeadlockAnalyzer>>();
             services.AddSingleton<ILogger<SimulationManager>, Logger<SimulationManager>>();
             services.AddSingleton<CompletionCoordinator>();
+
+            services.AddScoped<ISimulationDatabaseProcessor, SimulationDatabaseProcessor>();
 
             services.AddTransient<IForksFactory<Fork>, ForksFactory<Fork>>();
 
@@ -55,6 +63,11 @@ try
             services.Configure<PhilosopherConfiguration>(root.GetSection(nameof(PhilosopherConfiguration)));
         })
         .Build();
+    
+    using (var scope = host.Services.CreateScope())
+    {
+        scope.ServiceProvider.GetRequiredService<RunsContext>().Database.EnsureCreated();
+    }
 
     host.Run();
 }
@@ -105,13 +118,11 @@ static void ParseArgs(out string pathToConf, out bool helpOnly)
                 This is lab1 of NSU C# course.
 
                 *DESCRIPTION*
-                In this lab, I solved the Dining Philosophers problem using multiple threads.
+                In this lab, I solved the Dining Philosophers problem using .Net Generic Host and EntityFramework.
 
                 *ARGUMENTS*
                 -c or --config_path - relative or full path to config file. Current directory used by default.
                 -h or --help - see this page
-                -t or --update_time - time between updates of the simulation state output (100-200 ms)
-                -s or --simulation_time - time during which the simulation will run in milliseconds
                 """
             );
 

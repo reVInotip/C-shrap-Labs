@@ -11,6 +11,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Philosophers.Services.Channels.Items;
 using Philosophers.Services.Channels.Events;
+using Microsoft.Extensions.DependencyInjection;
+using Interface.DTO;
 
 namespace Philosophers.Core.HostedServices;
 
@@ -19,6 +21,7 @@ public class SimulationManager : BackgroundService, ISimulationManager
     private readonly IChannel<PhilosopherToPrinterChannelItem> _channel;
     private readonly ILogger<SimulationManager> _logger;
     private readonly CompletionCoordinator _coordinator;
+    private readonly IServiceScopeFactory _scopeFactory;
     private int _step = 0;
     private readonly Stopwatch _stopwatch = new();
     private int _items = 0;
@@ -28,12 +31,14 @@ public class SimulationManager : BackgroundService, ISimulationManager
         IOptions<PhilosopherConfiguration> options,
         IChannel<PhilosopherToPrinterChannelItem> channel,
         ILogger<SimulationManager> logger,
+        IServiceScopeFactory scopeFactory,
         CompletionCoordinator coordinator)
     {
         _channel = channel;
         _logger = logger;
         _coordinator = coordinator;
         _steps = options.Value.Steps;
+        _scopeFactory = scopeFactory;
 
         _channel.PublisherWantToRegister += PublisherWantToRegister;
     }
@@ -43,26 +48,89 @@ public class SimulationManager : BackgroundService, ISimulationManager
         ++_items;
     }
 
-    private async Task PrintInfo(CancellationToken stoppingToken)
+    private async Task<List<PhilosophersDto>> ReadDataFromChannel(CancellationToken stoppingToken)
     {
         _channel.Notify(this);
-        PhilosopherToPrinterChannelItem item;
 
-        ++_step;
+        var dtos = new List<PhilosophersDto>(_items);
+        for (int i = 0; i < _items; ++i)
+        {
+            var item = await _channel.Reader.ReadAsync(stoppingToken);
+            dtos.Add(
+                new PhilosophersDto
+                (
+                    item.PhilosopherInfo,
+                    new ForksDto(item.LeftForkInfo),
+                    new ForksDto(item.RightForkInfo)
+                )
+            );
+        }
+
+        return dtos;
+    }
+
+    private async Task<List<PhilosophersDto>> ReadDataFromChannel(
+        IChannelEventArgs args,
+        CancellationToken stoppingToken)
+    {
+        _channel.NotifyWith(this, args);
+
+        var dtos = new List<PhilosophersDto>(_items);
+        for (int i = 0; i < _items; ++i)
+        {
+            var item = await _channel.Reader.ReadAsync(stoppingToken);
+            dtos.Add(
+                new PhilosophersDto
+                (
+                    item.PhilosopherInfo,
+                    new ForksDto(item.LeftForkInfo),
+                    new ForksDto(item.RightForkInfo)
+                )
+            );
+        }
+
+        return dtos;
+    }
+
+    private void PrintInfo(List<PhilosophersDto> philosophersDtos)
+    {
+        _channel.Notify(this);
+
         Console.Clear();
         Console.WriteLine("==============STEP{0}==============", _step);
 
         for (int i = 0; i < _items; ++i)
         {
-            item = await _channel.Reader.ReadAsync(stoppingToken);
-            Console.WriteLine(item.PhilosopherInfo);
-            Console.WriteLine(" |- Left Fork: " + item.LeftForkInfo);
-            Console.WriteLine(" |- Right Fork: " + item.RightForkInfo);
+            var item = philosophersDtos[i];
+            Console.WriteLine(item.PhilosopherState);
+            Console.WriteLine(" |- Left Fork: " + item.LeftFork.ForkState);
+            Console.WriteLine(" |- Right Fork: " + item.RightFork.ForkState);
         }
+    }
+
+    private async Task SaveContextToDatabase(
+        ISimulationDatabaseProcessor databaseProcessor,
+        List<PhilosophersDto> philosophersDtos,
+        SimulationStates state,
+        CancellationToken stoppingToken)
+    {
+        await databaseProcessor.SaveRunningInfoAsync(
+            new RunningInfoDto(0, _step, _stopwatch.ElapsedMilliseconds,
+                state, philosophersDtos),
+            stoppingToken
+        );
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        List<PhilosophersDto> data;
+        IServiceScope scope;
+        IServiceProvider serviceProvider;
+        ISimulationDatabaseProcessor dbContext;
+
+        SimulationStates state = SimulationStates.FinishSuccess;
+        bool isException = false;
+
         try
         {
             _coordinator.RegisterService(GetType().Name);
@@ -70,27 +138,61 @@ public class SimulationManager : BackgroundService, ISimulationManager
             _stopwatch.Start();
             while (!stoppingToken.IsCancellationRequested && _step < _steps)
             {
-                await PrintInfo(stoppingToken);
-                Thread.Sleep(1000);
+                ++_step;
+
+                scope = _scopeFactory.CreateScope();
+                serviceProvider = scope.ServiceProvider;
+
+                dbContext = serviceProvider.GetRequiredService<ISimulationDatabaseProcessor>();
+                data = await ReadDataFromChannel(stoppingToken);
+                await SaveContextToDatabase(dbContext, data, SimulationStates.Running, stoppingToken);
+                PrintInfo(data);
+
+                scope.Dispose();
+                await Task.Delay(1000, stoppingToken);
             }
+            state = SimulationStates.FinishSuccess;
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Application shutdown forced, can not print stats");
+
+            state = SimulationStates.FinishSuccess;
+            isException = true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical($"Unexpected exception from {e.Source}.\nMessage: {e.Message}.\nStack Trace: {e.StackTrace}.");
+
+            state = SimulationStates.FinishError;
+            isException = true;
+        }
+        finally
+        {
             _stopwatch.Stop();
 
-            _channel.NotifyWith(this, new ChannelScoresEvent(){SimulationTime = _stopwatch.ElapsedMilliseconds});
-            
-            PhilosopherToPrinterChannelItem item;
-            Console.WriteLine("FinalStats");
-            for (int i = 0; i < _items; ++i)
+            scope = _scopeFactory.CreateScope();
+            serviceProvider = scope.ServiceProvider;
+
+            dbContext = serviceProvider.GetRequiredService<ISimulationDatabaseProcessor>();
+
+            if (isException)
             {
-                item = await _channel.Reader.ReadAsync(stoppingToken);
-                Console.WriteLine(item.PhilosopherInfo);
-                Console.WriteLine(" |- Left Fork: " + item.LeftForkInfo);
-                Console.WriteLine(" |- Right Fork: " + item.RightForkInfo);
+                data = await ReadDataFromChannel(stoppingToken);
+            }
+            else
+            {
+                data = await ReadDataFromChannel(
+                    new ChannelScoresEvent() { SimulationTime = _stopwatch.ElapsedMilliseconds },
+                    stoppingToken);
             }
 
+            await SaveContextToDatabase(dbContext, data, state, stoppingToken);
+            PrintInfo(data);
+
+            scope.Dispose();
+
             _coordinator.CompleteService(GetType().Name);
-        }
-        catch (OperationCanceledException) {
-            Console.WriteLine("Application shutdown forced, can not print stats");
         }
 
         return;

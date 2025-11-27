@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Philosophers.Services.Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Philosophers.Core.Tests", "Philosophers.Core.Tests\Philosophers.Core.Tests.csproj", "{61D52492-795A-4593-A2E1-840ECF333D91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Philosophers.DB", "Philosophers.DB\Philosophers.DB.csproj", "{45703A54-0A05-4CD1-B096-C18172F250C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Philosophers.View", "Philosophers.View\Philosophers.View.csproj", "{EEE96F15-AFAE-4B7A-B306-7D06D169CFD5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +46,13 @@ Global
 		{61D52492-795A-4593-A2E1-840ECF333D91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61D52492-795A-4593-A2E1-840ECF333D91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61D52492-795A-4593-A2E1-840ECF333D91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45703A54-0A05-4CD1-B096-C18172F250C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45703A54-0A05-4CD1-B096-C18172F250C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45703A54-0A05-4CD1-B096-C18172F250C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45703A54-0A05-4CD1-B096-C18172F250C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEE96F15-AFAE-4B7A-B306-7D06D169CFD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEE96F15-AFAE-4B7A-B306-7D06D169CFD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEE96F15-AFAE-4B7A-B306-7D06D169CFD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEE96F15-AFAE-4B7A-B306-7D06D169CFD5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
