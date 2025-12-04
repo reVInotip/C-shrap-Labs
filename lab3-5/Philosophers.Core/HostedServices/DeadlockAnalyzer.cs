@@ -97,8 +97,7 @@ public class DeadlockAnalyzer : BackgroundService
             }
 
             data.Clear();
-            //await Task.Delay(1000, stoppingToken);
-            Thread.Sleep(1000);
+            await Task.Delay(1000, stoppingToken);
         }
 
         return null;
@@ -133,7 +132,7 @@ public class DeadlockAnalyzer : BackgroundService
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning("Application shutdown forced, can not print stats");
+            _logger.LogInformation("Deadlock analyzer shutdown!");
         }
 
         return;

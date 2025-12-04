@@ -155,10 +155,9 @@ public class SimulationManager : BackgroundService, ISimulationManager
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning("Application shutdown forced, can not print stats");
+            _logger.LogInformation("Simulation manager shutdown");
 
             state = SimulationStates.FinishSuccess;
-            isException = true;
         }
         catch (Exception e)
         {

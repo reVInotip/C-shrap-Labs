@@ -24,7 +24,8 @@ public class PhilosopherServiceTests
     {
         var mi = typeof(PhilosopherService)
             .GetMethod("ProcessState", BindingFlags.NonPublic | BindingFlags.Instance);
-        mi!.Invoke(p, null);
+        Task? task = (Task?) mi!.Invoke(p, null);
+        task?.Wait();
     }
 
     // Utility: установка приватного _state

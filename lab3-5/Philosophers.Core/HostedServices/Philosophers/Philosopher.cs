@@ -147,15 +147,20 @@ public abstract class PhilosopherService : BackgroundService, IPhilosopher
         {
             _channelToAnalyzer.RegisterPublisher(this);
             _channelToPrinter.RegisterPublisher(this);
-            await Task.Run(() =>
+            await Task.Run(async () =>
                 {
                     while (!stoppingToken.IsCancellationRequested)
                     {
-                        ProcessState();
+                        await ProcessState();
                     }
                 },  stoppingToken);
         }
-        catch (OperationCanceledException) {
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Philosophers service shutdown!");
+        }
+        catch (Exception)
+        {
             throw new ApplicationException("Operation cancelled not normally");
         }
         finally
@@ -166,35 +171,35 @@ public abstract class PhilosopherService : BackgroundService, IPhilosopher
         return;
     }
 
-    private void ProcessState()
+    private async Task ProcessState()
     {
 
         switch (_state)
         {
             case PhilosopherStates.Thinking:
-                ProcessThinkingState();
+                await ProcessThinkingState();
                 break;
             case PhilosopherStates.Hungry:
-                ProcessHungryState();
+                await ProcessHungryState();
                 break;
             case PhilosopherStates.TakeLeftFork:
-                ProcessTakingLeftForkState();
+                await ProcessTakingLeftForkState();
                 break;
             case PhilosopherStates.TakeRightFork:
-                ProcessTakingRightForkState();
+                await ProcessTakingRightForkState();
                 break;
             case PhilosopherStates.Eating:
-                ProcessEatingState();
+                await ProcessEatingState();
                 break;
         }
     }
 
-    private void ProcessThinkingState()
+    private async Task ProcessThinkingState()
     {
         while (_stateTimer < _thinkingTime)
         {
             //Console.WriteLine("Th {0}, {1}", _stateTimer, _eatingTime);
-            Thread.Sleep(_thinkingTime / 8);
+            await Task.Delay(_thinkingTime / 8);
             Interlocked.Add(ref _stateTimer, _thinkingTime / 8);
         }
 
@@ -205,13 +210,13 @@ public abstract class PhilosopherService : BackgroundService, IPhilosopher
         }
     }
 
-    private void ProcessHungryState()
+    private async Task ProcessHungryState()
     {
         _philosopherStrategy.LockFork(this);
 
         if (_philosopherStrategy.IsForkLocked(this))
         {
-            Thread.Sleep(_takeForkTime);
+            await Task.Delay(_takeForkTime);
 
             lock (_lockObject)
             {
@@ -242,13 +247,13 @@ public abstract class PhilosopherService : BackgroundService, IPhilosopher
         }
     }
 
-    private void ProcessTakingLeftForkState()
+    private async Task ProcessTakingLeftForkState()
     {
         _philosopherStrategy.LockRightFork(this);
 
         if (_philosopherStrategy.IsForkLocked(this))
         {
-            Thread.Sleep(_takeForkTime);
+            await Task.Delay(_takeForkTime);
             
             lock (_lockObject)
             {
@@ -270,13 +275,13 @@ public abstract class PhilosopherService : BackgroundService, IPhilosopher
         }
     }
 
-    private void ProcessTakingRightForkState()
+    private async Task ProcessTakingRightForkState()
     {
         _philosopherStrategy.LockLeftFork(this);
 
         if (_philosopherStrategy.IsForkLocked(this))
         {
-            Thread.Sleep(_takeForkTime);
+            await Task.Delay(_takeForkTime);
 
             lock (_lockObject)
             {
@@ -299,11 +304,11 @@ public abstract class PhilosopherService : BackgroundService, IPhilosopher
         }
     }
 
-    private void ProcessEatingState()
+    private async Task ProcessEatingState()
     {
         while (_stateTimer < _eatingTime)
         {
-            Thread.Sleep(_eatingTime / 8);
+            await Task.Delay(_eatingTime / 8);
             Interlocked.Add(ref _stateTimer, _eatingTime / 8);
         }
 
